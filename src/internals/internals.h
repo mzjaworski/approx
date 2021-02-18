@@ -121,7 +121,7 @@ namespace mz::approx::internals {
         auto operator()(dimension_data<Head>& head){
             head.current_coordinate += head.step_size;
 
-            if (head.current_coordinate >= head.stop_at){
+            if (head.current_coordinate > head.stop_at){
                 head.current_coordinate = head.starting_position;
             }
         }
@@ -133,7 +133,7 @@ namespace mz::approx::internals {
         auto operator()(dimension_data<Head>& head, dimension_data<Tail>& ...tail){
             head.current_coordinate += head.step_size;
 
-            if (head.current_coordinate >= head.stop_at){
+            if (head.current_coordinate > head.stop_at){
                 head.current_coordinate = head.starting_position;
                 advance_to_next_point<Tail...>()(tail...);
             }
