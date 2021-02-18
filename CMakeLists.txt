@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.17)
-project(approx)
+project(approx VERSION 0.1)
 
-set(CMAKE_CXX_STANDARD 20)
+add_library(approx INTERFACE)
 
-add_executable(approx examples/example.cpp include/approx/approx.h src/approx/internals.h src/riemann/riemann.h)
+target_compile_features(approx INTERFACE cxx_std_20)
+
+target_include_directories(approx
+        INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include ${CMAKE_CURRENT_SOURCE_DIR}/src)
