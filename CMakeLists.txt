@@ -3,4 +3,4 @@ project(approx)
 
 set(CMAKE_CXX_STANDARD 20)
 
-add_executable(approx examples/example.cpp include/approx/approx.h src/approx/internals.h)
+add_executable(approx examples/example.cpp include/approx/approx.h src/approx/internals.h src/riemann/riemann.h)

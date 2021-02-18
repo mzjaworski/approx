@@ -29,7 +29,6 @@ namespace mz::approx::internals {
         const unsigned int steps;
     };
 
-
     template <typename ...Args>
     struct type_list_size;
 
