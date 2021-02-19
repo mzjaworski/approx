@@ -163,6 +163,12 @@ namespace mz::approx::internals {
         }
     };
 
+
+    template <typename ...Args>
+    void debug_print(Args&& ...args){
+        ((std::cout << args << " "), ...) << std::endl;
+    }
+
 }
 
 #endif

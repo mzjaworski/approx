@@ -15,8 +15,8 @@ namespace mz::approx::riemann {
         template <typename I, typename R>
         struct left_point{
 
-            static R init(const I& input){
-                return 0;
+            static R init(const I& from, const I& step_size){
+                return from;
             }
 
         };
@@ -24,8 +24,8 @@ namespace mz::approx::riemann {
         template <typename I, typename R>
         struct mid_point{
 
-            static R init(const I& input){
-                return input / 2;
+            static R init(const I& from, const I& step_size){
+                return from + (step_size / 2);
             }
 
         };
@@ -33,12 +33,11 @@ namespace mz::approx::riemann {
         template <typename I, typename R>
         struct right_point{
 
-            static R init(const I& input){
-                return input;
+            static R init(const I& from, const I& step_size){
+                return from+step_size;
             }
 
         };
-
     }
 
     template <template <typename I, typename R> typename method, typename Arg, typename ...Args, std::enable_if_t<mz::approx::internals::check_if_all_are_arithmetic<Arg, Args...>::value, bool> = true>
@@ -51,10 +50,15 @@ namespace mz::approx::riemann {
 
         const auto initialize_dimension_data = []<typename T>(auto&& dimension_data, const mz::approx::internals::variable_integration_info<T>& info_struct){
             auto& [current_coordinate, starting_position, stop_at, step_size] = dimension_data;
-            const auto& [from, to, steps] = info_struct;
+            auto [from, to, steps] = info_struct;
+
+            // check whenever we have to swap integration range
+            if (from > to)
+                std::swap(from, to);
+
             stop_at = to;
             step_size = (to - from) / steps;
-            current_coordinate = starting_position = method<T, double>::init(step_size);
+            current_coordinate = starting_position = method<T, double>::init(from, step_size);
             return dimension_data;
         };
 
