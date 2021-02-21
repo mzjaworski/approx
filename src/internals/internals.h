@@ -140,26 +140,13 @@ namespace mz::approx::internals {
         }
     };
 
-
-    template <typename ...Args>
-    struct bind_function_parameters;
-
-    template <class F>
-    struct bind_function_parameters<F>{
-        F f;
-
-        auto operator()(){
-            return f;
-        }
-    };
-
+    
     template <class F, typename Head, typename ...Tail>
-    struct bind_function_parameters<F, Head, Tail...>{
+    struct bind_function_parameters{
         F f;
 
         auto operator()(const dimension_data<Head>& head, const dimension_data<Tail>& ...tail){
-            auto temp = std::bind_front(f, head.current_coordinate);
-            return bind_function_parameters<decltype(temp), Tail...>{temp}(tail...);
+            return std::bind_front(std::forward<F>(f), head.current_coordinate, (tail.current_coordinate)...);
         }
     };
 
