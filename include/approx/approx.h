@@ -15,27 +15,28 @@ namespace mz::approx {
 
         namespace method{
 
-            template <typename I, typename R>
+            template <typename T>
             struct left_point;
 
-            template <typename I, typename R>
+            template <typename T>
             struct mid_point;
 
-            template <typename I, typename R>
+            template <typename T>
             struct right_point;
 
         }
 
-        template <template <typename I, typename R> typename method, typename Arg, typename ...Args, std::enable_if_t<mz::approx::internals::check_if_all_are_arithmetic<Arg, Args...>::value, bool>>
+        template <typename Type>
+        struct variable_integration_info;
+
+        template <template <typename T> typename method, typename Arg, typename ...Args, std::enable_if_t<mz::approx::internals::all_types_are_arithmetic<Arg, Args...>(), bool>>
         constexpr double approximate(const std::function<double(Arg, Args...)>& function,
-                                     const typename mz::approx::internals::make_tuple_of<mz::approx::internals::variable_integration_info, Arg,Args...>::type& info);
+                                     const mz::approx::internals::make_tuple_of<mz::approx::riemann::variable_integration_info, Arg,Args...>& info);
 
     }
 
     // TODO add different methods
 
 }
-
-
 
 #endif
