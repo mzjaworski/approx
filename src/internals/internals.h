@@ -33,28 +33,28 @@ namespace mz::approx::internals {
         return (std::is_arithmetic_v<Tail> && ...);
     }
 
-    template <typename ...P>
+    template <typename ...>
     struct dummy{};
 
-    template <template <typename ...> class C, template <typename I> class W, typename T, typename ...P>
+    template <template <typename ...> class C, template <typename> class W, typename T, typename ...P>
     struct make_internal;
 
-    template <template <typename ...> class C, template <typename I> class W, typename ...E, typename H>
+    template <template <typename ...> class C, template <typename> class W, typename ...E, typename H>
     struct make_internal<C, W, dummy<E...>, H>{
         using type = C<E..., W<H>>;
     };
 
-    template <template <typename ...> class C, template <typename I> class W, typename ...E>
+    template <template <typename ...> class C, template <typename> class W, typename ...E>
     struct make_internal<C, W, dummy<E...>>{
         using type = C<E...>;
     };
 
-    template <template <typename ...> class C, template <typename I> class W, typename ...E, typename H, typename ...T>
+    template <template <typename ...> class C, template <typename> class W, typename ...E, typename H, typename ...T>
     struct make_internal<C, W, dummy<E...>, H, T...>{
         using type = typename make_internal<C, W, dummy<E..., W<H>>, T...>::type;
     };
 
-    template <template <typename I> class W, typename ...T>
+    template <template <typename> class W, typename ...T>
     using make_tuple_of = typename make_internal<std::tuple, W, dummy<>, T...>::type;
 
     // Apply normal summation for non floating point types
@@ -72,11 +72,26 @@ namespace mz::approx::internals {
         input.current_coordinate = t;
     }
 
+    template <typename T, std::enable_if_t<std::is_arithmetic_v<std::remove_cvref_t<T>>, bool> = true>
+    constexpr bool eq(T&& lhs, T&& rhs){
+        return std::fabs(lhs - rhs) < std::numeric_limits<std::remove_cvref_t<T>>::epsilon();
+    }
+
+    template <typename T, std::enable_if_t<std::is_floating_point_v<std::remove_cvref_t<T>>, bool> = true>
+    constexpr bool gt(T&& lhs, T&& rhs){
+        return !eq(lhs,rhs) ? lhs > rhs : false;
+    }
+
+    template <typename T, std::enable_if_t<std::negation_v<std::is_floating_point<std::remove_cvref_t<T>>>, bool> = true>
+    constexpr bool gt(T&& lhs, T&& rhs){
+        return lhs > rhs;
+    }
+
     template <typename Head>
     constexpr void advance_to_next_point(dimension_data<Head>& head){
         advance_coordinate(head);
 
-        if (head.current_coordinate > head.stop_at){
+        if (gt(head.current_coordinate, head.stop_at)){
             head.current_coordinate = head.starting_position;
             head.compensation = 0;
         }
@@ -86,7 +101,7 @@ namespace mz::approx::internals {
     constexpr void advance_to_next_point(dimension_data<Head>& head, dimension_data<Tail>& ...tail){
         advance_coordinate(head);
 
-        if (head.current_coordinate > head.stop_at){
+        if (gt(head.current_coordinate, head.stop_at)){
             head.current_coordinate = head.starting_position;
             head.compensation = 0;
 
