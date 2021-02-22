@@ -14,19 +14,25 @@
 
 namespace mz::approx::internals {
 
+    template <typename ...Args>
+    void debug_print(Args&& ...args){
+        ((std::cout << args << " "), ...) << std::endl;
+    }
+
     template <typename Type>
     struct dimension_data {
-        Type current_coordinate;
-        Type starting_position;
-        Type stop_at;
-        Type step_size;
+        Type current_coordinate = 0;
+        Type starting_position = 0;
+        Type stop_at = 0;
+        Type step_size = 0;
+        Type compensation = 0;
     };
 
     template <typename Type, std::enable_if_t<std::is_arithmetic_v<Type>, bool> = true>
     struct variable_integration_info {
-        Type from;
-        Type to;
-        const unsigned int steps;
+        Type from = 0;
+        Type to = 0;
+        const unsigned int steps = 0;
     };
 
     template <typename ...Args>
@@ -112,6 +118,22 @@ namespace mz::approx::internals {
     };
 
 
+    // Apply normal summation for non floating point types
+    template <typename T, std::enable_if_t<std::negation_v<std::is_floating_point<T>>, bool> = true>
+    auto advance_coordinate(dimension_data<T>& input){
+        input.current_coordinate += input.step_size;
+    }
+
+    // Apply Kahan summation algorithm for the floating point types
+    template <typename T, std::enable_if_t<std::is_floating_point_v<T>, bool> = true>
+    auto advance_coordinate(dimension_data<T>& input){
+        auto y = input.step_size - input.compensation;
+        auto t = input.current_coordinate + y;
+        input.compensation = (t - input.current_coordinate) - y;
+        input.current_coordinate = t;
+    }
+
+
     template <typename ...Args>
     struct advance_to_next_point;
 
@@ -119,10 +141,11 @@ namespace mz::approx::internals {
     struct advance_to_next_point<Head>{
 
         auto operator()(dimension_data<Head>& head){
-            head.current_coordinate += head.step_size;
+            advance_coordinate(head);
 
             if (head.current_coordinate > head.stop_at){
                 head.current_coordinate = head.starting_position;
+                head.compensation = 0;
             }
         }
     };
@@ -131,16 +154,18 @@ namespace mz::approx::internals {
     struct advance_to_next_point<Head, Tail...>{
 
         auto operator()(dimension_data<Head>& head, dimension_data<Tail>& ...tail){
-            head.current_coordinate += head.step_size;
+            advance_coordinate(head);
 
             if (head.current_coordinate > head.stop_at){
                 head.current_coordinate = head.starting_position;
+                head.compensation = 0;
+
                 advance_to_next_point<Tail...>()(tail...);
             }
         }
     };
 
-    
+
     template <class F, typename Head, typename ...Tail>
     struct bind_function_parameters{
         F f;
@@ -149,12 +174,6 @@ namespace mz::approx::internals {
             return std::bind_front(std::forward<F>(f), head.current_coordinate, (tail.current_coordinate)...);
         }
     };
-
-
-    template <typename ...Args>
-    void debug_print(Args&& ...args){
-        ((std::cout << args << " "), ...) << std::endl;
-    }
 
 }
 

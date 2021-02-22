@@ -49,7 +49,7 @@ namespace mz::approx::riemann {
         };
 
         const auto initialize_dimension_data = []<typename T>(auto&& dimension_data, const mz::approx::internals::variable_integration_info<T>& info_struct){
-            auto& [current_coordinate, starting_position, stop_at, step_size] = dimension_data;
+            auto& [current_coordinate, starting_position, stop_at, step_size, compensation] = dimension_data;
             auto [from, to, steps] = info_struct;
 
             // check whenever we have to swap integration range
