@@ -72,6 +72,17 @@ namespace mz::approx::internals {
         input.current_coordinate = t;
     }
 
+    // Kahan sum function usable as a binary predicate
+    template <typename T, typename I>
+    constexpr std::tuple<T,T> kahan_sum(const std::tuple<T,T>& sum_compensation, const I& next){
+        auto [sum, compensation] = sum_compensation;
+        const auto y = static_cast<T>(next) - compensation;
+        const auto t = sum + y;
+        compensation = (t - sum) - y;
+        sum = t;
+        return {sum, compensation};
+    }
+
     template <typename T, std::enable_if_t<std::is_arithmetic_v<std::remove_cvref_t<T>>, bool> = true>
     constexpr bool eq(T&& lhs, T&& rhs){
         return std::fabs(lhs - rhs) < std::numeric_limits<std::remove_cvref_t<T>>::epsilon();

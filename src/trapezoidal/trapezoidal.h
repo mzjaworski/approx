@@ -1,44 +1,10 @@
-//          Copyright Mateusz Jaworski 2021 - 2021.
-// Distributed under the Boost Software License, Version 1.0.
-//    (See accompanying file LICENSE.md or copy at
-//          https://www.boost.org/LICENSE_1_0.txt)
-
-#ifndef APPROX_RIEMANN_H
-#define APPROX_RIEMANN_H
+#ifndef TEST_APPROX_TRAPEZOIDAL_H
+#define TEST_APPROX_TRAPEZOIDAL_H
 
 #include "../internals/internals.h"
+#include <numeric>
 
-namespace mz::approx::riemann {
-
-    namespace method {
-
-        template <typename T>
-        struct left_point{
-
-            static constexpr T init(const T& from, const T& step_size){
-                return from;
-            }
-
-        };
-
-        template <typename T>
-        struct mid_point{
-
-            static constexpr T init(const T& from, const T& step_size){
-                return from + (step_size / 2);
-            }
-
-        };
-
-        template <typename T>
-        struct right_point{
-
-            static constexpr T init(const T& from, const T& step_size){
-                return from + step_size;
-            }
-
-        };
-    }
+namespace mz::approx::trapezoidal{
 
     template <typename Type>
     struct variable_integration_info{
@@ -47,15 +13,19 @@ namespace mz::approx::riemann {
         const unsigned long int steps = 0;
     };
 
-    template <template <typename T> typename method, typename Arg, typename ...Args, std::enable_if_t<mz::approx::internals::all_types_are_arithmetic<Arg, Args...>(), bool> = true>
+    template <typename Arg, typename ...Args, std::enable_if_t<mz::approx::internals::all_types_are_arithmetic<Arg, Args...>(), bool> = true>
     constexpr double approximate(const std::function<double(Arg, Args...)>& function,
-                                 const mz::approx::internals::make_tuple_of<mz::approx::riemann::variable_integration_info, Arg,Args...>& info){
+                                 const mz::approx::internals::make_tuple_of<mz::approx::trapezoidal::variable_integration_info, Arg,Args...>& info){
 
         constexpr auto calculate_total_number_of_points = [](auto&& ...info_struct) {
             return (info_struct.steps * ...);
         };
 
-        constexpr auto initialize_dimension_data = []<typename T>(auto&& dimension_data, const mz::approx::riemann::variable_integration_info<T>& info_struct){
+        constexpr auto get_number_of_steps_in_first_dimension = [](auto&& head, auto&& ...tail){
+            return head.steps;
+        };
+
+        constexpr auto initialize_dimension_data = []<typename T>(auto&& dimension_data, const mz::approx::trapezoidal::variable_integration_info<T>& info_struct){
             auto& [current_coordinate, starting_position, stop_at, step_size, compensation] = dimension_data;
             auto [from, to, steps] = info_struct;
 
@@ -65,7 +35,7 @@ namespace mz::approx::riemann {
 
             stop_at = to;
             step_size = (to - from) / steps;
-            current_coordinate = starting_position = method<T>::init(from, step_size);
+            current_coordinate = starting_position = 0;
             return dimension_data;
         };
 
@@ -73,7 +43,9 @@ namespace mz::approx::riemann {
             return (static_cast<double>(dimension_data.step_size) * ...);
         };
 
+        const unsigned long int first_dimension_steps = std::apply( get_number_of_steps_in_first_dimension, info);
         const unsigned long int total_number_of_points = std::apply(calculate_total_number_of_points , info);
+
         using point_data_type = mz::approx::internals::make_tuple_of<mz::approx::internals::dimension_data, Arg, Args...>;
 
         // pick each entry from info tuple and input them into the initialize_dimension_data function together with a default constructed dimension_data struct
@@ -84,17 +56,26 @@ namespace mz::approx::riemann {
         // calculate n-dimensional delta
         const double delta = std::apply(calculate_delta, point_data);
 
-        double result = 0;
-        for (unsigned long int current_point = 0; current_point < total_number_of_points; current_point++){
+        double result = 0.0;
+        for (unsigned long int current_point = 0; current_point < total_number_of_points;){
 
-            // bind point coordinates to the given function and evaluate it
-            const auto output = std::apply(mz::approx::internals::bind_function_parameters<decltype(function), Arg, Args...>{function}, point_data)();
-
-            // add slice area to the result
-            result += output * delta;
+            // get first output
+            const auto output_1 = std::apply(mz::approx::internals::bind_function_parameters<decltype(function), Arg, Args...>{function}, point_data)();
 
             // advance point coordinates
             std::apply(mz::approx::internals::advance_to_next_point<Arg, Args...>, point_data);
+
+            // get second output
+            const auto output_2 = std::apply(mz::approx::internals::bind_function_parameters<decltype(function), Arg, Args...>{function}, point_data)();
+
+            // check whenever we have advanced to the last point for the first variable if yes
+            // advance again to point to the first position again
+            if (!(++current_point % first_dimension_steps))
+                std::apply(mz::approx::internals::advance_to_next_point<Arg, Args...>, point_data);
+
+            // add outputs to the result
+            result += ((output_1 + output_2) / 2) * delta;
+
         }
 
         return result;

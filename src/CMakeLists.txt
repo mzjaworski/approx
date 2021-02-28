@@ -1,2 +1,3 @@
 add_subdirectory(internals)
 add_subdirectory(riemann)
+add_subdirectory(trapezoidal)

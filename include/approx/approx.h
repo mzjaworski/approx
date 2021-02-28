@@ -7,6 +7,7 @@
 #define APPROX_APPROX_H
 
 #include "../../src/riemann/riemann.h"
+#include "../../src/trapezoidal/trapezoidal.h"
 
 namespace mz::approx {
 
@@ -32,6 +33,19 @@ namespace mz::approx {
         template <template <typename T> typename method, typename Arg, typename ...Args, std::enable_if_t<mz::approx::internals::all_types_are_arithmetic<Arg, Args...>(), bool>>
         constexpr double approximate(const std::function<double(Arg, Args...)>& function,
                                      const mz::approx::internals::make_tuple_of<mz::approx::riemann::variable_integration_info, Arg,Args...>& info);
+
+
+    }
+
+    namespace trapezoidal {
+
+        template <typename Type>
+        struct variable_integration_info;
+
+        // sadly cannot be made constexpr due to internal usage of a vector
+        template <typename Arg, typename ...Args, std::enable_if_t<mz::approx::internals::all_types_are_arithmetic<Arg, Args...>(), bool>>
+        constexpr double approximate(const std::function<double(Arg, Args...)>& function,
+                                     const mz::approx::internals::make_tuple_of<mz::approx::trapezoidal::variable_integration_info, Arg,Args...>& info);
 
     }
 
