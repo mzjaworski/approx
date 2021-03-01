@@ -1,7 +1,6 @@
 #ifndef TEST_APPROX_TRAPEZOIDAL_H
 #define TEST_APPROX_TRAPEZOIDAL_H
 
-#include "../internals/internals.h"
 #include <numeric>
 
 namespace mz::approx::trapezoidal{
@@ -63,7 +62,7 @@ namespace mz::approx::trapezoidal{
             const auto output_1 = std::apply(mz::approx::internals::bind_function_parameters<decltype(function), Arg, Args...>{function}, point_data)();
 
             // advance point coordinates
-            std::apply(mz::approx::internals::advance_to_next_point<Arg, Args...>, point_data);
+            std::apply(mz::approx::internals::advance_to_next_point<mz::approx::internals::greather_than, Arg, Args...>, point_data);
 
             // get second output
             const auto output_2 = std::apply(mz::approx::internals::bind_function_parameters<decltype(function), Arg, Args...>{function}, point_data)();
@@ -71,7 +70,7 @@ namespace mz::approx::trapezoidal{
             // check whenever we have advanced to the last point for the first variable if yes
             // advance again to point to the first position again
             if (!(++current_point % first_dimension_steps))
-                std::apply(mz::approx::internals::advance_to_next_point<Arg, Args...>, point_data);
+                std::apply(mz::approx::internals::advance_to_next_point<mz::approx::internals::greather_than, Arg, Args...>, point_data);
 
             // add outputs to the result
             result += ((output_1 + output_2) / 2) * delta;
