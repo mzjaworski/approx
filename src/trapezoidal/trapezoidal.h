@@ -34,7 +34,7 @@ namespace mz::approx::trapezoidal{
 
             stop_at = to;
             step_size = (to - from) / steps;
-            current_coordinate = starting_position = 0;
+            current_coordinate = starting_position = from;
             return dimension_data;
         };
 
