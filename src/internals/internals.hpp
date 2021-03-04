@@ -3,8 +3,8 @@
 //    (See accompanying file LICENSE.md or copy at
 //          https://www.boost.org/LICENSE_1_0.txt)
 
-#ifndef APPROX_INTERNALS_H
-#define APPROX_INTERNALS_H
+#ifndef APPROX_INTERNALS_HPP
+#define APPROX_INTERNALS_HPP
 
 #include <type_traits>
 #include <functional>

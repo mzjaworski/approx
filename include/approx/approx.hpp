@@ -3,12 +3,12 @@
 //    (See accompanying file LICENSE.md or copy at
 //          https://www.boost.org/LICENSE_1_0.txt)
 
-#ifndef APPROX_APPROX_H
-#define APPROX_APPROX_H
+#ifndef APPROX_APPROX_HPP
+#define APPROX_APPROX_HPP
 
-#include "../../src/internals/internals.h"
-#include "../../src/riemann/riemann.h"
-#include "../../src/trapezoidal/trapezoidal.h"
+#include "../../src/internals/internals.hpp"
+#include "../../src/riemann/riemann.hpp"
+#include "../../src/trapezoidal/trapezoidal.hpp"
 
 namespace mz::approx {
 

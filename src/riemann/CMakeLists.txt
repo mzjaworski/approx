@@ -1,1 +1,1 @@
-add_library(riemann riemann.h)
+add_library(riemann riemann.hpp)

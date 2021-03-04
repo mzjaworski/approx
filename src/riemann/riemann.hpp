@@ -3,8 +3,8 @@
 //    (See accompanying file LICENSE.md or copy at
 //          https://www.boost.org/LICENSE_1_0.txt)
 
-#ifndef APPROX_RIEMANN_H
-#define APPROX_RIEMANN_H
+#ifndef APPROX_RIEMANN_HPP
+#define APPROX_RIEMANN_HPP
 
 #include <numeric>
 #include <span>

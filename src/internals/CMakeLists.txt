@@ -1,1 +1,1 @@
-add_library(internals internals.h)
+add_library(internals internals.hpp)

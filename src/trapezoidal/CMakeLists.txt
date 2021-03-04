@@ -1,1 +1,1 @@
-add_library(trapezoidal trapezoidal.h)
+add_library(trapezoidal trapezoidal.hpp)

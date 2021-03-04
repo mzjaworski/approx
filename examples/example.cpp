@@ -3,7 +3,7 @@
 //    (See accompanying file LICENSE.md or copy at
 //          https://www.boost.org/LICENSE_1_0.txt)
 
-#include "../include/approx/approx.h"
+#include "../include/approx/approx.hpp"
 #include <iostream>
 
 int main() {
